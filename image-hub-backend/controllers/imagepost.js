@@ -1,8 +1,9 @@
 import SingleFile from '../models/fileschema.js'
+import fs from 'fs'
 
 
 export const singleFileUpload = async (req, res, next) => {
-    try{
+    try {
         const file = new SingleFile({
             fileName: req.file.originalname,
             filePath: req.file.path,
@@ -12,22 +13,38 @@ export const singleFileUpload = async (req, res, next) => {
         console.log(req.file.path);
         await file.save();
         res.status(201).send('File Uploaded Successfully');
-    }catch(error) {
+    } catch (error) {
         res.status(400).send(error.message);
     }
 }
 
 export const getallSingleFiles = async (req, res, next) => {
-    try{
+    try {
         const files = await SingleFile.find();
         res.status(200).send(files);
-    }catch(error) {
+    } catch (error) {
         res.status(400).send(error.message);
     }
 }
 
+export const deleteimg = async (req, res) => {
+    try {
+        let image = await SingleFile.findById(req.params.id)
+        if (!image) {
+            return res.status(401).send("Not Found")
+        }
+
+        let deleteimg = await SingleFile.findByIdAndDelete(req.params.id)
+        fs.unlinkSync(deleteimg.filePath)
+        res.json({ "succes": "img deleted", "deletedimg": deleteimg })
+
+    } catch (error) {
+        res.status(500).send(error);
+    }
+}
+
 const fileSizeFormatter = (bytes, decimal) => {
-    if(bytes === 0){
+    if (bytes === 0) {
         return '0 Bytes';
     }
     const dm = decimal || 2;
